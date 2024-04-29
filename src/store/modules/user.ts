@@ -75,6 +75,14 @@ export const useUserStore = defineStore({
       this.roleList = [];
       this.sessionTimeout = false;
     },
+    async getUserInfoAction() {
+      const token: string = getAuthCache(TOKEN_KEY);
+      const userInfo: IUserInfo = getAuthCache(USER_INFO_KEY);
+      const roles: IRoleInfo[] = getAuthCache(ROLES_KEY);
+      this.setToken(token);
+      this.setUserInfo(userInfo);
+      this.setRoleList(roles);
+    },
     /**
      * @description: login
      */

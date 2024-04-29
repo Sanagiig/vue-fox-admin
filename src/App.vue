@@ -7,6 +7,7 @@
 </template>
 
 <script lang="ts" setup>
+  import { computed } from 'vue';
   import { AppProvider } from '@/components/Application';
   import { useTitle } from '@/hooks/web/useTitle';
   import { useLocale } from '@/locales/useLocale';
@@ -14,7 +15,6 @@
 
   import { useDarkModeTheme } from '@/hooks/setting/useDarkModeTheme';
   import 'dayjs/locale/zh-cn';
-  import { computed } from 'vue';
 
   // support Multi-language
   const { getAntdLocale } = useLocale();

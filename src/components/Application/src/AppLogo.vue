@@ -5,7 +5,7 @@
 <template>
   <div class="anticon" :class="getAppLogoClass" @click="goHome">
     <!-- <img src="../../../assets/images/logo.png" /> -->
-    <Icon size="64" icon="openmoji:firefox-developer" />
+    <Icon class="transition transition-all" :size="iconSize" icon="openmoji:firefox-developer" />
     <div class="ml-2 truncate md:opacity-100" :class="getTitleClass" v-show="showTitle">
       {{ title }}
     </div>
@@ -54,6 +54,10 @@
       'xs:opacity-0': !props.alwaysShowTitle,
     },
   ]);
+
+  const iconSize = computed(() => {
+    return props.showTitle ? 64 : 30;
+  });
 
   function goHome() {
     go(userStore.getUserInfo.homePath || PageEnum.BASE_HOME);

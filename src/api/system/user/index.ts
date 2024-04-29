@@ -3,6 +3,7 @@ import { IUserInfo, LoginReq, LoginRes, RegisterReq } from '../model/userModel';
 
 import { MsgMode } from '@/enums/httpEnum';
 import { PageResult } from '@/api/common/result';
+import { IPageInfo } from '@/api/common/params';
 
 enum Api {
   Register = '/user/register',
@@ -38,41 +39,41 @@ export function createUser(params: LoginReq) {
 }
 
 export function deleteUserById(params: LoginReq) {
-  return http.post<void>(
+  return http.delete<void>(
     { url: Api.DeleteById, params },
     { successMessageMode: MsgMode.MESSAGE, errorMessageMode: MsgMode.MESSAGE },
   );
 }
 export function deleteUserByIds(params: LoginReq) {
-  return http.post<void>(
+  return http.delete<void>(
     { url: Api.DeleteUsers, params },
     { successMessageMode: MsgMode.MESSAGE, errorMessageMode: MsgMode.MESSAGE },
   );
 }
 
 export function updateUser(params: LoginReq) {
-  return http.post<IUserInfo | void>(
+  return http.get<IUserInfo | void>(
     { url: Api.UpdateUser, params },
     { successMessageMode: MsgMode.MESSAGE, errorMessageMode: MsgMode.MESSAGE },
   );
 }
 
 export function getUser(params: LoginReq) {
-  return http.post<IUserInfo | void>(
+  return http.get<IUserInfo | void>(
     { url: Api.GetUser, params },
     { errorMessageMode: MsgMode.MESSAGE },
   );
 }
 
 export function getUserById(params: LoginReq) {
-  return http.post<IUserInfo | void>(
+  return http.get<IUserInfo | void>(
     { url: Api.GetUserById, params },
     { errorMessageMode: MsgMode.MESSAGE },
   );
 }
 
-export function getUserPagination(params: LoginReq) {
-  return http.post<PageResult<IUserInfo>>(
+export function getUserPagination(params: IUserInfo & IPageInfo) {
+  return http.get<PageResult<IUserInfo>>(
     { url: Api.GetUserPagination, params },
     { errorMessageMode: MsgMode.MESSAGE },
   );

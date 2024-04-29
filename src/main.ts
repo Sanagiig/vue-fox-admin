@@ -42,7 +42,7 @@ async function bootstrap() {
   // Configure routing
   // 配置路由
   setupRouter(app);
-
+  console.log('router', router);
   // router-guard
   // 路由守卫
   setupRouterGuard(router);
