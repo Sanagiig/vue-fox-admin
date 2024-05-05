@@ -3,15 +3,16 @@
     <BasicTable @register="registerTable">
       <template #toolbar>
         <a-button type="primary" danger @click="handleDeleteBatch">批量删除</a-button>
-        <a-button type="primary" @click="handleCreate"> 新增用户 </a-button>
+        <a-button type="primary" @click="handleCreate"> 新增数据字典 </a-button>
       </template>
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'action'">
           <TableAction
             :actions="[
               {
+                ifShow: !parentId,
                 icon: 'icon-park-outline:add',
-                onClick: handleUpdateRole.bind(null, record),
+                onClick: handleEditSub.bind(null, record),
               },
               {
                 icon: 'clarity:note-edit-line',
@@ -31,39 +32,48 @@
         </template>
       </template>
     </BasicTable>
-    <UserDrawer @register="registerDrawer" @success="handleSuccess" />
+    <DicDrawer @register="registerDrawer" @success="handleSuccess" />
   </div>
 </template>
 <script lang="ts" setup>
   import { BasicTable, useTable, TableAction } from '@/components/Table';
   import { useMessage } from '@/hooks/web/useMessage';
   import { useDrawer } from '@/components/Drawer';
-  import UserDrawer from './components/UserDrawer.vue';
-  import { deleteUserById, deleteUserByIds, getUserPagination } from '@/api/system/user';
-  import { DrawerTypeEnum, columns, searchFormSchema } from '../data/user.data';
+  import DicDrawer from './DicDrawer.vue';
+  import {
+    deleteDataDicById,
+    deleteDataDicByIds,
+    getDataDicPagination,
+  } from '@/api/system/dataDic';
+  import { DrawerTypeEnum, columns, searchFormSchema } from '../../data/dic.data';
+  import { computed, watch } from 'vue';
 
-  defineOptions({ name: 'UserManagement' });
+  defineOptions({ name: 'DataDicManagement' });
+  const props = defineProps<{ parentId?: string }>();
+  const isUserForm = computed(() => !props.parentId);
 
   const { createMessage, createConfirm } = useMessage();
   const [registerDrawer, { openDrawer }] = useDrawer();
   const [registerTable, { reload, getSelectRowKeys, clearSelectedRowKeys, setLoading }] = useTable({
-    title: '用户列表',
-    api: getUserPagination,
+    title: '数据字典列表',
+    api: async (data) => {
+      const params = Object.assign({}, data, { parentId: props.parentId });
+      console.log('params', params);
+      return await getDataDicPagination(params);
+    },
     rowSelection: { type: 'checkbox' },
     columns,
     formConfig: {
       labelWidth: 120,
       schemas: searchFormSchema,
     },
-    useSearchForm: true,
+    useSearchForm: isUserForm,
     showTableSetting: true,
     bordered: true,
-    showIndexColumn: false,
     actionColumn: {
       width: 80,
       title: '操作',
       dataIndex: 'action',
-      // slots: { customRender: 'action' },
       fixed: undefined,
     },
   });
@@ -73,23 +83,22 @@
     reload();
   }
 
-  function handleUpdateRole(record: Recordable) {
+  function handleCreate() {
     openDrawer(true, {
-      type: DrawerTypeEnum.UPDATE_ROLE,
-      record,
+      type: DrawerTypeEnum.ADD,
+      parentId: props.parentId,
     });
   }
 
-  function handleCreate() {
+  function handleEditSub(record: Recordable) {
     openDrawer(true, {
-      isUpdate: false,
-      type: DrawerTypeEnum.ADD,
+      type: DrawerTypeEnum.EDIT_SUB,
+      record,
     });
   }
 
   function handleEdit(record: Recordable) {
     openDrawer(true, {
-      isUpdate: true,
       type: DrawerTypeEnum.EDIT,
       record,
     });
@@ -98,7 +107,7 @@
   async function handleDelete(id: string) {
     try {
       setLoading(true);
-      await deleteUserById(id);
+      await deleteDataDicById(id);
       reload();
     } catch (e) {
       console.error('err:', e);
@@ -119,7 +128,7 @@
       content: '删除数据后将无法恢复，请确认',
       onOk: async () => {
         try {
-          await deleteUserByIds(selKeys);
+          await deleteDataDicByIds(selKeys);
           reloadTable();
         } catch (e) {
           console.error(e);
@@ -133,4 +142,11 @@
   function handleSuccess() {
     reloadTable();
   }
+
+  watch(
+    () => props.parentId,
+    () => {
+      reloadTable();
+    },
+  );
 </script>

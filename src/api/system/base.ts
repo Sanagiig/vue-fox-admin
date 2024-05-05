@@ -1,5 +1,5 @@
 import { http } from '@/utils/http/axios';
-import { GetCaptchaRes } from '../model/baseModel';
+import { GetCaptchaRes } from './model/baseModel';
 
 enum Api {
   GetCaptcha = '/base/getCaptcha',

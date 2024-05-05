@@ -2,6 +2,7 @@
   <div>
     <BasicTable @register="registerTable">
       <template #toolbar>
+        <a-button type="primary" danger @click="handleDeleteBatch">批量删除</a-button>
         <a-button type="primary" @click="handleCreate"> 新增角色 </a-button>
       </template>
       <template #bodyCell="{ column, record }">
@@ -18,7 +19,7 @@
                 popConfirm: {
                   title: '是否确认删除',
                   placement: 'left',
-                  confirm: handleDelete.bind(null, record),
+                  confirm: handleDelete.bind(null, record.id),
                 },
               },
             ]"
@@ -31,19 +32,20 @@
 </template>
 <script lang="ts" setup>
   import { BasicTable, useTable, TableAction } from '@/components/Table';
-  import { getRoleListByPage } from '@/api/demo/system';
-
+  import { useMessage } from '@/hooks/web/useMessage';
   import { useDrawer } from '@/components/Drawer';
-  import RoleDrawer from './RoleDrawer.vue';
-
-  import { columns, searchFormSchema } from './data/user.data';
+  import RoleDrawer from './components/RoleDrawer.vue';
+  import { deleteRoleById, deleteRoleByIds, getRolePagination } from '@/api/system/role';
+  import { columns, searchFormSchema } from '../data/role.data';
 
   defineOptions({ name: 'RoleManagement' });
 
+  const { createMessage, createConfirm } = useMessage();
   const [registerDrawer, { openDrawer }] = useDrawer();
-  const [registerTable, { reload }] = useTable({
+  const [registerTable, { reload, getSelectRowKeys, clearSelectedRowKeys, setLoading }] = useTable({
     title: '角色列表',
-    api: getRoleListByPage,
+    api: getRolePagination,
+    rowSelection: { type: 'checkbox' },
     columns,
     formConfig: {
       labelWidth: 120,
@@ -52,7 +54,6 @@
     useSearchForm: true,
     showTableSetting: true,
     bordered: true,
-    showIndexColumn: false,
     actionColumn: {
       width: 80,
       title: '操作',
@@ -62,6 +63,11 @@
     },
   });
 
+  function reloadTable() {
+    clearSelectedRowKeys();
+    reload();
+  }
+
   function handleCreate() {
     openDrawer(true, {
       isUpdate: false,
@@ -70,16 +76,47 @@
 
   function handleEdit(record: Recordable) {
     openDrawer(true, {
-      record,
       isUpdate: true,
+      record,
     });
   }
 
-  function handleDelete(record: Recordable) {
-    console.log(record);
+  async function handleDelete(id: string) {
+    try {
+      setLoading(true);
+      await deleteRoleById(id);
+      reload();
+    } catch (e) {
+      console.error('err:', e);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function handleDeleteBatch() {
+    const selKeys = getSelectRowKeys() as string[];
+    if (!selKeys.length) {
+      createMessage.warn('请选择要操作的数据');
+      return;
+    }
+    createConfirm({
+      iconType: 'warning',
+      title: '提示',
+      content: '删除数据后将无法恢复，请确认',
+      onOk: async () => {
+        try {
+          await deleteRoleByIds(selKeys);
+          reloadTable();
+        } catch (e) {
+          console.error(e);
+        } finally {
+          console.log('fi');
+        }
+      },
+    });
   }
 
   function handleSuccess() {
-    reload();
+    reloadTable();
   }
 </script>

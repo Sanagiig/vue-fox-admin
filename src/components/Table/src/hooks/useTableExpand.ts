@@ -101,6 +101,7 @@ export function useTableExpand(
     const { childrenColumnName } = unref(propsRef);
     const paths: Array<Key> = [];
     getKeyPaths(tableData.value, childrenColumnName || 'children', keyValue, paths);
+    console.log('paths', paths);
     expandedRowKeys.value = paths;
   }
 

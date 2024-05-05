@@ -18,7 +18,7 @@ const system: AppRouteModule = {
       path: 'account',
       name: 'AccountManagement',
       meta: {
-        title: t('routes.demo.system.account'),
+        title: t('routes.demo.system.user'),
         ignoreKeepAlive: false,
       },
       component: () => import('@/views/demo/system/account/index.vue'),

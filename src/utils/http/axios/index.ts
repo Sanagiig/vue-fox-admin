@@ -33,7 +33,6 @@ const transform: AxiosTransform = {
    * @description: 处理响应数据。如果数据不是预期格式，可直接抛出错误
    */
   transformResponseHook: (res: AxiosResponse<Result>, options: RequestOptions) => {
-    const { t } = useI18n();
     const { isTransformResponse, isReturnNativeResponse } = options;
     // 是否返回原生响应头 比如：需要获取响应头时使用该属性
     if (isReturnNativeResponse) {
@@ -45,15 +44,8 @@ const transform: AxiosTransform = {
       return res.data;
     }
 
-    const { data } = res;
-    if (!data) {
-      // return '[HTTP] Request has no return value';
-      throw new Error(t('sys.api.apiRequestFailed'));
-    }
-
-    tipMessage(data, options);
-
-    return data.result;
+    tipMessage(res.data, options);
+    return res.data.result;
   },
 
   // 请求之前处理config
@@ -138,7 +130,7 @@ const transform: AxiosTransform = {
     const { t } = useI18n();
     const errorLogStore = useErrorLogStoreWithOut();
     errorLogStore.addAjaxErrorInfo(error);
-    const { response, code, message, config } = error || {};
+    const { response, code, message, config = {} } = error || {};
     const errorMessageMode = config?.requestOptions?.errorMessageMode || 'none';
     const msg: string = response?.data?.error?.message ?? '';
     const err: string = error?.toString?.() ?? '';
@@ -172,7 +164,7 @@ const transform: AxiosTransform = {
 
     // 添加自动重试机制 保险起见 只针对GET请求
     const retryRequest = new AxiosRetry();
-    const { isOpenRetry } = config.requestOptions.retryRequest;
+    const isOpenRetry = config?.requestOptions?.retryRequest?.isOpenRetry;
     config.method?.toUpperCase() === RequestEnum.GET &&
       isOpenRetry &&
       error?.response?.status !== 401 &&

@@ -57,7 +57,6 @@ export function tipMessage(data: Result, options: RequestOptions) {
   const { code, msg, errMsg } = data;
   const hasSuccess = code == ResultEnum.SUCCESS && options.successMessageMode;
   const hasErr = code == ResultEnum.ERROR && options.errorMessageMode;
-
   if (hasSuccess) {
     let message = msg;
     if (isNull(msg) || isUndefined(msg) || isEmpty(msg)) {
@@ -74,7 +73,7 @@ export function tipMessage(data: Result, options: RequestOptions) {
     }
   }
 
-  if (hasErr) {
+  if (hasErr || errMsg) {
     let message = msg;
     if (isNull(msg) || isUndefined(msg) || isEmpty(msg)) {
       message = t(`sys.api.operationFailed`);
@@ -88,6 +87,7 @@ export function tipMessage(data: Result, options: RequestOptions) {
         createMessage.error(message);
         break;
     }
+    throw new Error(errMsg || message);
   }
 
   if (errMsg) {

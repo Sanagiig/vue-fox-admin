@@ -18,7 +18,7 @@ const system: AppRouteModule = {
       path: 'user',
       name: 'UserManagement',
       meta: {
-        title: t('routes.demo.system.account'),
+        title: t('routes.demo.system.user'),
         ignoreKeepAlive: false,
       },
       component: () => import('@/views/system/user-manager/index.vue'),
@@ -32,15 +32,23 @@ const system: AppRouteModule = {
       },
       component: () => import('@/views/system/role-manager/index.vue'),
     },
-
     {
       path: 'authority',
       name: 'AuthorityManagement',
       meta: {
-        title: t('routes.demo.system.menu'),
+        title: t('routes.demo.system.auth'),
         ignoreKeepAlive: true,
       },
       component: () => import('@/views/system/authority-manager/index.vue'),
+    },
+    {
+      path: 'data-dic',
+      name: 'DataDicManagement',
+      meta: {
+        title: t('routes.demo.system.dataDic'),
+        ignoreKeepAlive: true,
+      },
+      component: () => import('@/views/system/data-dic-manager/index.vue'),
     },
   ],
 };

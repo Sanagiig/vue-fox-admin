@@ -62,7 +62,6 @@ export function usePagination(refProps: ComputedRef<BasicTableProps>) {
 
   function setPagination(info: Partial<PaginationProps>) {
     const paginationInfo = unref(getPaginationInfo);
-    console.log('set pagination', getPaginationInfo);
     configRef.value = {
       ...(!isBoolean(paginationInfo) ? paginationInfo : {}),
       ...info,

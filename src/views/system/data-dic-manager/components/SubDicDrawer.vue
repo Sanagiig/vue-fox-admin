@@ -24,18 +24,18 @@
 <script lang="ts" setup>
   import { ref, computed, unref } from 'vue';
   import { BasicForm, useForm } from '@/components/Form';
-  import { formSchema } from '../../data/role.data';
+  import { formSchema } from '../../data/dic.data';
   import { BasicDrawer, useDrawerInner } from '@/components/Drawer';
   import { BasicTree, TreeItem } from '@/components/Tree';
 
   import { getMenuList } from '@/api/demo/system';
-  import { createRole, getRoleById, updateRole } from '@/api/system/role';
-  import { IRoleInfo } from '@/api/system/model/roleModel';
+  import { createDataDic, getDataDicById, updateDataDic } from '@/api/system/dataDic';
+  import { IDataDicInfo } from '@/api/system/model/dataDicModel';
 
   const emit = defineEmits(['success', 'register']);
   const isUpdate = ref(true);
   const treeData = ref<TreeItem[]>([]);
-  const roleDetail = ref<IRoleInfo>({} as any);
+  const dataDicDetail = ref<IDataDicInfo>({} as any);
   const [registerForm, { resetFields, setFieldsValue, updateSchema, validate, getFieldsValue }] =
     useForm({
       labelWidth: 90,
@@ -53,60 +53,57 @@
       treeData.value = (await getMenuList()) as any as TreeItem[];
     }
     if (unref(isUpdate)) {
-      roleDetail.value = (await getRoleById(data.record.id))! || {};
-      setFieldsValue(roleDetail.value);
+      dataDicDetail.value = (await getDataDicById(data.record.id))! || {};
+      setFieldsValue(dataDicDetail.value);
       updateFormConfig();
     }
   });
 
-  const getTitle = computed(() => (!unref(isUpdate) ? '新增角色' : '编辑角色'));
+  const getTitle = computed(() => (!unref(isUpdate) ? '新增数据字典' : '编辑数据字典'));
 
   function resetData() {
     resetFields();
     updateFormConfig();
-    roleDetail.value = {} as any;
+    dataDicDetail.value = {} as any;
   }
 
   async function createUserByData(userData: any) {
-    const user = Object.assign({ id: roleDetail.value.id }, userData);
+    const user = Object.assign({ parentId: dataDicDetail.value.parentId || '' }, userData);
 
-    return await createRole(user);
+    return await createDataDic(user);
   }
 
   async function updateUserByData(userData: any) {
-    const user = Object.assign({}, roleDetail.value, userData, {
-      createdAt: undefined,
-      updatedAt: undefined,
-    });
+    const user = Object.assign({}, dataDicDetail.value, userData);
 
-    return await updateRole(user);
+    return await updateDataDic(user);
   }
 
   function updateFormConfig() {
-    const rolenameField = Object.assign(
+    const dataDicnameField = Object.assign(
       {},
-      formSchema.find((item) => item.field == 'code'),
+      formSchema.find((item) => item.field == 'dataDicCode'),
     );
 
-    rolenameField.componentProps = Object.assign({}, rolenameField.componentProps, {
-      disabled: !!roleDetail.value.code && unref(isUpdate),
+    dataDicnameField.componentProps = Object.assign({}, dataDicnameField.componentProps, {
+      disabled: !!dataDicDetail.value.code && unref(isUpdate),
     });
-    updateSchema(rolenameField);
+    updateSchema(dataDicnameField);
   }
 
   async function handleSubmit() {
     setDrawerProps({ confirmLoading: true });
     try {
       await validate();
-      const role = getFieldsValue();
-      console.log('role', role);
+      const dataDic = getFieldsValue();
+      console.log('dataDic', dataDic);
       if (!unref(isUpdate)) {
-        await createUserByData(role);
+        await createUserByData(dataDic);
       } else {
-        await updateUserByData(role);
+        await updateUserByData(dataDic);
       }
       // TODO custom api
-      console.log(role);
+      console.log(dataDic);
       closeDrawer();
       emit('success');
     } finally {

@@ -24,17 +24,20 @@
 <script lang="ts" setup>
   import { ref, computed, unref } from 'vue';
   import { BasicForm, useForm } from '@/components/Form';
-  import { formSchema } from './user.data';
+  import { formSchema } from '../../data/authority.data';
   import { BasicDrawer, useDrawerInner } from '@/components/Drawer';
   import { BasicTree, TreeItem } from '@/components/Tree';
 
   import { getMenuList } from '@/api/demo/system';
+  import { createAuthority, getAuthorityById, updateAuthority } from '@/api/system/authority';
+  import { IAuthorityInfo } from '@/api/system/model/authorityModel';
 
   const emit = defineEmits(['success', 'register']);
   const isUpdate = ref(true);
   const treeData = ref<TreeItem[]>([]);
-
-  const [registerForm, { resetFields, setFieldsValue, validate }] = useForm({
+  const parentId = ref<string>('');
+  const authorityDetail = ref<IAuthorityInfo>({} as any);
+  const [registerForm, { resetFields, setFieldsValue, validate, getFieldsValue }] = useForm({
     labelWidth: 90,
     baseColProps: { span: 24 },
     schemas: formSchema,
@@ -42,31 +45,55 @@
   });
 
   const [registerDrawer, { setDrawerProps, closeDrawer }] = useDrawerInner(async (data) => {
+    isUpdate.value = !!data?.isUpdate;
+    parentId.value = data.parentId;
+
     resetFields();
     setDrawerProps({ confirmLoading: false });
-    // 需要在setFieldsValue之前先填充treeData，否则Tree组件可能会报key not exist警告
     if (unref(treeData).length === 0) {
       treeData.value = (await getMenuList()) as any as TreeItem[];
     }
-    isUpdate.value = !!data?.isUpdate;
 
     if (unref(isUpdate)) {
-      setFieldsValue({
-        ...data.record,
-      });
+      const authority = (await getAuthorityById(data.record.id)) || ({} as any);
+      setFieldsValue(authority);
+      authorityDetail.value = authority;
     }
   });
 
-  const getTitle = computed(() => (!unref(isUpdate) ? '新增角色' : '编辑角色'));
+  const getTitle = computed(() => (!unref(isUpdate) ? '新增权限' : '编辑权限'));
+
+  async function createAuthorityByData(authData: any) {
+    const user = Object.assign({}, authData);
+
+    return await createAuthority(user);
+  }
+
+  async function updateAuthorityByData(authData: any) {
+    const user = Object.assign({}, { id: authorityDetail.value.id }, authData);
+
+    return await updateAuthority(user);
+  }
 
   async function handleSubmit() {
     try {
-      const values = await validate();
+      await validate();
       setDrawerProps({ confirmLoading: true });
-      // TODO custom api
-      console.log(values);
+      const authority = getFieldsValue();
+
+      if (parentId.value) {
+        authority.parentId = parentId.value;
+      }
+      if (!unref(isUpdate)) {
+        await createAuthorityByData(authority);
+      } else {
+        await updateAuthorityByData(authority);
+      }
+
       closeDrawer();
-      emit('success');
+      emit('success', parentId.value);
+    } catch (e) {
+      console.error('err:', e);
     } finally {
       setDrawerProps({ confirmLoading: false });
     }

@@ -1,5 +1,5 @@
 import { http } from '@/utils/http/axios';
-import { IUserInfo, LoginReq, LoginRes, RegisterReq } from '../model/userModel';
+import { IUserInfo, LoginReq, LoginRes, RegisterReq } from './model/userModel';
 
 import { MsgMode } from '@/enums/httpEnum';
 import { PageResult } from '@/api/common/result';
@@ -31,43 +31,43 @@ export function login(params: LoginReq) {
   );
 }
 
-export function createUser(params: LoginReq) {
+export function createUser(params: IUserInfo & { password: string }) {
   return http.post<IUserInfo | void>(
     { url: Api.Create, params },
     { successMessageMode: MsgMode.MESSAGE, errorMessageMode: MsgMode.MESSAGE },
   );
 }
 
-export function deleteUserById(params: LoginReq) {
+export function deleteUserById(id: string) {
   return http.delete<void>(
-    { url: Api.DeleteById, params },
+    { url: Api.DeleteById, params: { id } },
     { successMessageMode: MsgMode.MESSAGE, errorMessageMode: MsgMode.MESSAGE },
   );
 }
-export function deleteUserByIds(params: LoginReq) {
+export function deleteUserByIds(ids: string[]) {
   return http.delete<void>(
-    { url: Api.DeleteUsers, params },
+    { url: Api.DeleteUsers, params: { ids } },
     { successMessageMode: MsgMode.MESSAGE, errorMessageMode: MsgMode.MESSAGE },
   );
 }
 
-export function updateUser(params: LoginReq) {
-  return http.get<IUserInfo | void>(
+export function updateUser(params: IUserInfo) {
+  return http.patch<IUserInfo | void>(
     { url: Api.UpdateUser, params },
     { successMessageMode: MsgMode.MESSAGE, errorMessageMode: MsgMode.MESSAGE },
   );
 }
 
-export function getUser(params: LoginReq) {
+export function getUser(params: IUserInfo) {
   return http.get<IUserInfo | void>(
     { url: Api.GetUser, params },
     { errorMessageMode: MsgMode.MESSAGE },
   );
 }
 
-export function getUserById(params: LoginReq) {
+export function getUserById(id: string) {
   return http.get<IUserInfo | void>(
-    { url: Api.GetUserById, params },
+    { url: Api.GetUserById, params: { id } },
     { errorMessageMode: MsgMode.MESSAGE },
   );
 }

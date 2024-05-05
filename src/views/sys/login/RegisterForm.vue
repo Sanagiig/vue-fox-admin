@@ -101,7 +101,7 @@
   import { useI18n } from '@/hooks/web/useI18n';
   import { useLoginState, useFormRules, useFormValid, LoginStateEnum } from './useLogin';
   import { getCaptcha } from '@/api/system/base';
-  import { registerApi } from '../../../api/system/user/index';
+  import { registerApi } from '../../../api/system/user';
 
   const FormItem = Form.Item;
   const InputPassword = Input.Password;

@@ -1,5 +1,6 @@
 import { IBaseInfo } from '@/api/common/info';
 import { IRoleInfo } from './roleModel';
+import { StatusEnum } from '@/enums/baseEnum';
 
 export interface IUserInfo extends IBaseInfo {
   username: string;
@@ -10,7 +11,8 @@ export interface IUserInfo extends IBaseInfo {
   roles: IRoleInfo[];
   phone: string;
   email: string;
-  enable: number;
+  homePath: string;
+  status: StatusEnum;
 }
 
 export type RegisterReq = Omit<IUserInfo, 'id' | 'createdAt' | 'updatedAt'>;

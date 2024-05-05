@@ -43,7 +43,7 @@ export abstract class AxiosTransform {
   /**
    * @description: 请求之后的拦截器
    */
-  responseInterceptors?: (res: AxiosResponse<any>) => AxiosResponse<any>;
+  responseInterceptors?: (res: AxiosResponse<any>, options: RequestOptions) => AxiosResponse<any>;
 
   /**
    * @description: 请求之前的拦截器错误处理

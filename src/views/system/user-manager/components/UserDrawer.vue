@@ -4,10 +4,10 @@
     @register="registerDrawer"
     showFooter
     :title="getTitle"
-    width="500px"
+    :width="drawerWidth"
     @ok="handleSubmit"
   >
-    <BasicForm @register="registerForm">
+    <BasicForm v-show="isFormDrawer" @register="registerForm">
       <template #menu="{ model, field }">
         <BasicTree
           v-model:value="model[field]"
@@ -19,22 +19,41 @@
         />
       </template>
     </BasicForm>
+    <UserRoleEditTable :userId="userDetail.id" v-show="isTableDrawer" />
   </BasicDrawer>
 </template>
 <script lang="ts" setup>
   import { ref, computed, unref } from 'vue';
   import { BasicForm, useForm } from '@/components/Form';
-  import { formSchema } from '../data/user.data';
+  import { formSchema, DrawerTypeEnum } from '../../data/user.data';
   import { BasicDrawer, useDrawerInner } from '@/components/Drawer';
   import { BasicTree, TreeItem } from '@/components/Tree';
 
-  import { getMenuList } from '@/api/demo/system';
+  import { createUser, getUserById, updateUser } from '@/api/system/user';
+  import { IUserInfo } from '@/api/system/model/userModel';
+  import UserRoleEditTable from '@/views/system/components/userRoleEditTable/index.vue';
 
   const emit = defineEmits(['success', 'register']);
   const isUpdate = ref(true);
+  const type = ref<DrawerTypeEnum>(DrawerTypeEnum.ADD);
   const treeData = ref<TreeItem[]>([]);
+  const userDetail = ref<IUserInfo>({} as any);
 
-  const [registerForm, { resetFields, setFieldsValue, validate }] = useForm({
+  const isFormDrawer = computed(() => {
+    return [DrawerTypeEnum.ADD, DrawerTypeEnum.EDIT].includes(type.value);
+  });
+  const isTableDrawer = computed(() => {
+    return [DrawerTypeEnum.UPDATE_ROLE].includes(type.value);
+  });
+  const drawerWidth = computed(() => {
+    return isFormDrawer.value ? '500px' : '80%';
+  });
+
+  const isRemoteDetail = computed(() =>
+    [DrawerTypeEnum.ADD, DrawerTypeEnum.UPDATE_ROLE].includes(type.value),
+  );
+
+  const [registerForm, { resetFields, setFieldsValue, updateSchema, validate }] = useForm({
     labelWidth: 90,
     baseColProps: { span: 24 },
     schemas: formSchema,
@@ -42,31 +61,81 @@
   });
 
   const [registerDrawer, { setDrawerProps, closeDrawer }] = useDrawerInner(async (data) => {
-    resetFields();
+    type.value = data.type;
+    resetData();
     setDrawerProps({ confirmLoading: false });
-    // 需要在setFieldsValue之前先填充treeData，否则Tree组件可能会报key not exist警告
-    if (unref(treeData).length === 0) {
-      treeData.value = (await getMenuList()) as any as TreeItem[];
-    }
-    isUpdate.value = !!data?.isUpdate;
 
-    if (unref(isUpdate)) {
-      setFieldsValue({
-        ...data.record,
-      });
+    if (isRemoteDetail.value) {
+      const user = await getUserById(data.record.id);
+      userDetail.value = user! || {};
+      setFieldsValue(user || {});
     }
   });
 
-  const getTitle = computed(() => (!unref(isUpdate) ? '新增角色' : '编辑角色'));
+  const getTitle = computed(() => {
+    switch (type.value) {
+      case DrawerTypeEnum.ADD:
+        return '新增用户';
+      case DrawerTypeEnum.EDIT:
+        return '编辑用户';
+      case DrawerTypeEnum.UPDATE_ROLE:
+        return '角色编辑';
+      default:
+        return '编辑';
+    }
+  });
+
+  function resetData() {
+    resetFields();
+    updateFormConfig();
+    userDetail.value = {} as any;
+  }
+
+  function updateFormConfig() {
+    const usernameField = Object.assign(
+      {},
+      formSchema.find((item) => item.field == 'username'),
+    );
+
+    usernameField.componentProps.disabled = unref(isUpdate);
+    updateSchema(usernameField);
+  }
+
+  async function createUserByData() {
+    const userData: any = await validate();
+    // 默认密码
+    const user = Object.assign({}, userDetail.value, userData);
+
+    return await createUser(user);
+  }
+
+  async function updateUserByData() {
+    const userData: any = await validate();
+    const user = Object.assign({}, userDetail.value, userData);
+
+    return await updateUser(user);
+  }
+
+  async function updateUserRole() {}
 
   async function handleSubmit() {
+    setDrawerProps({ confirmLoading: true });
     try {
-      const values = await validate();
-      setDrawerProps({ confirmLoading: true });
-      // TODO custom api
-      console.log(values);
+      switch (type.value) {
+        case DrawerTypeEnum.ADD:
+          await createUserByData();
+          break;
+        case DrawerTypeEnum.EDIT:
+          await updateUserByData();
+          break;
+        case DrawerTypeEnum.UPDATE_ROLE:
+          await updateUserRole();
+          break;
+      }
       closeDrawer();
       emit('success');
+    } catch (e) {
+      console.error('err:', e);
     } finally {
       setDrawerProps({ confirmLoading: false });
     }

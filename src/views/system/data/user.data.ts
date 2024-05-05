@@ -1,19 +1,15 @@
 import { BasicColumn, FormSchema } from '@/components/Table';
-import { h } from 'vue';
-import { Switch } from 'ant-design-vue';
-import { setRoleStatus } from '@/api/demo/system';
-import { useMessage } from '@/hooks/web/useMessage';
+import { status2CustomRender } from '@/utils/trans/data2render';
+import { useDataDicStore } from '@/store/modules/data';
 
-type CheckedType = boolean | string | number;
+export enum DrawerTypeEnum {
+  ADD = 'add',
+  EDIT = 'edit',
+  UPDATE_ROLE = 'updateRole',
+}
+
+const { getByCode } = useDataDicStore();
 export const columns: BasicColumn[] = [
-  {
-    title: '序号',
-    dataIndex: '_index',
-    width: 50,
-    customRender({ index }) {
-      return `${index + 1}`;
-    },
-  },
   {
     title: '昵称',
     dataIndex: 'nickname',
@@ -29,31 +25,7 @@ export const columns: BasicColumn[] = [
     dataIndex: 'status',
     width: 120,
     customRender: ({ record }) => {
-      if (!Reflect.has(record, 'pendingStatus')) {
-        record.pendingStatus = false;
-      }
-      return h(Switch, {
-        checked: record.status === '1',
-        checkedChildren: '停用',
-        unCheckedChildren: '启用',
-        loading: record.pendingStatus,
-        onChange(checked: CheckedType) {
-          record.pendingStatus = true;
-          const newStatus = checked ? '1' : '0';
-          const { createMessage } = useMessage();
-          setRoleStatus(record.id, newStatus)
-            .then(() => {
-              record.status = newStatus;
-              createMessage.success(`已成功修改角色状态`);
-            })
-            .catch(() => {
-              createMessage.error('修改角色状态失败');
-            })
-            .finally(() => {
-              record.pendingStatus = false;
-            });
-        },
-      });
+      return status2CustomRender(record.status);
     },
   },
   {
@@ -89,17 +61,14 @@ export const searchFormSchema: FormSchema[] = [
     colProps: { span: 8 },
   },
   {
-    field: 'enable',
+    field: 'status',
     label: '状态',
-    component: 'Select',
-    defaultValue: '0',
+    component: 'ApiSelect',
     componentProps: {
-      options: [
-        { label: '启用', value: '1' },
-        { label: '停用', value: '0' },
-      ],
+      labelField: 'name',
+      valueField: 'code',
+      api: async () => await getByCode('status'),
     },
-    colProps: { span: 8 },
   },
 ];
 
@@ -138,20 +107,18 @@ export const formSchema: FormSchema[] = [
     component: 'Input',
   },
   {
-    field: 'enable',
+    field: 'status',
     label: '状态',
-    component: 'RadioButtonGroup',
-    defaultValue: '0',
+    component: 'ApiSelect',
     componentProps: {
-      options: [
-        { label: '启用', value: '1' },
-        { label: '停用', value: '0' },
-      ],
+      labelField: 'name',
+      valueField: 'code',
+      api: async () => await getByCode('status'),
     },
   },
   {
-    label: '描述',
     field: 'description',
+    label: '描述',
     component: 'InputTextArea',
   },
 ];
