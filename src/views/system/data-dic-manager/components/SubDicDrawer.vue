@@ -7,18 +7,7 @@
     width="500px"
     @ok="handleSubmit"
   >
-    <BasicForm @register="registerForm">
-      <template #menu="{ model, field }">
-        <BasicTree
-          v-model:value="model[field]"
-          :treeData="treeData"
-          :fieldNames="{ title: 'menuName', key: 'id' }"
-          checkable
-          toolbar
-          title="菜单分配"
-        />
-      </template>
-    </BasicForm>
+    <BasicForm @register="registerForm" />
   </BasicDrawer>
 </template>
 <script lang="ts" setup>
@@ -26,15 +15,11 @@
   import { BasicForm, useForm } from '@/components/Form';
   import { formSchema } from '../../data/dic.data';
   import { BasicDrawer, useDrawerInner } from '@/components/Drawer';
-  import { BasicTree, TreeItem } from '@/components/Tree';
-
-  import { getMenuList } from '@/api/demo/system';
   import { createDataDic, getDataDicById, updateDataDic } from '@/api/system/dataDic';
   import { IDataDicInfo } from '@/api/system/model/dataDicModel';
 
   const emit = defineEmits(['success', 'register']);
   const isUpdate = ref(true);
-  const treeData = ref<TreeItem[]>([]);
   const dataDicDetail = ref<IDataDicInfo>({} as any);
   const [registerForm, { resetFields, setFieldsValue, updateSchema, validate, getFieldsValue }] =
     useForm({
@@ -49,9 +34,6 @@
 
     resetData();
     setDrawerProps({ confirmLoading: false });
-    if (unref(treeData).length === 0) {
-      treeData.value = (await getMenuList()) as any as TreeItem[];
-    }
     if (unref(isUpdate)) {
       dataDicDetail.value = (await getDataDicById(data.record.id))! || {};
       setFieldsValue(dataDicDetail.value);
@@ -96,7 +78,6 @@
     try {
       await validate();
       const dataDic = getFieldsValue();
-      console.log('dataDic', dataDic);
       if (!unref(isUpdate)) {
         await createUserByData(dataDic);
       } else {

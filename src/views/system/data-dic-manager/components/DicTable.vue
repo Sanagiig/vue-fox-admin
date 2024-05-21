@@ -7,28 +7,30 @@
       </template>
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'action'">
-          <TableAction
-            :actions="[
-              {
-                ifShow: !parentId,
-                icon: 'icon-park-outline:add',
-                onClick: handleEditSub.bind(null, record),
-              },
-              {
-                icon: 'clarity:note-edit-line',
-                onClick: handleEdit.bind(null, record),
-              },
-              {
-                icon: 'ant-design:delete-outlined',
-                color: 'error',
-                popConfirm: {
-                  title: '是否确认删除',
-                  placement: 'left',
-                  confirm: handleDelete.bind(null, record.id),
+          <div @click.stop>
+            <TableAction
+              :actions="[
+                {
+                  ifShow: !parent?.id,
+                  icon: 'icon-park-outline:add',
+                  onClick: handleEditSub.bind(null, record),
                 },
-              },
-            ]"
-          />
+                {
+                  icon: 'clarity:note-edit-line',
+                  onClick: handleEdit.bind(null, record),
+                },
+                {
+                  icon: 'ant-design:delete-outlined',
+                  color: 'error',
+                  popConfirm: {
+                    title: '是否确认删除',
+                    placement: 'left',
+                    confirm: handleDelete.bind(null, record.id),
+                  },
+                },
+              ]"
+            />
+          </div>
         </template>
       </template>
     </BasicTable>
@@ -47,17 +49,18 @@
   } from '@/api/system/dataDic';
   import { DrawerTypeEnum, columns, searchFormSchema } from '../../data/dic.data';
   import { computed, watch } from 'vue';
+  import { IDataDicInfo } from '@/api/system/model/dataDicModel';
 
   defineOptions({ name: 'DataDicManagement' });
-  const props = defineProps<{ parentId?: string }>();
-  const isUserForm = computed(() => !props.parentId);
+  const props = defineProps<{ parent?: IDataDicInfo }>();
+  const isUserForm = computed(() => !props.parent?.id);
 
   const { createMessage, createConfirm } = useMessage();
   const [registerDrawer, { openDrawer }] = useDrawer();
   const [registerTable, { reload, getSelectRowKeys, clearSelectedRowKeys, setLoading }] = useTable({
     title: '数据字典列表',
     api: async (data) => {
-      const params = Object.assign({}, data, { parentId: props.parentId });
+      const params = Object.assign({}, data, { parentId: props.parent?.id });
       console.log('params', params);
       return await getDataDicPagination(params);
     },
@@ -86,14 +89,14 @@
   function handleCreate() {
     openDrawer(true, {
       type: DrawerTypeEnum.ADD,
-      parentId: props.parentId,
+      parent: props.parent,
     });
   }
 
   function handleEditSub(record: Recordable) {
     openDrawer(true, {
       type: DrawerTypeEnum.EDIT_SUB,
-      record,
+      parent: record,
     });
   }
 
@@ -144,7 +147,7 @@
   }
 
   watch(
-    () => props.parentId,
+    () => props.parent,
     () => {
       reloadTable();
     },

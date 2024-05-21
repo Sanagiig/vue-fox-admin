@@ -23,7 +23,7 @@
   </div>
 </template>
 <script lang="ts" setup>
-  import { ref, watch } from 'vue';
+  import { ref, watch, toRaw } from 'vue';
   import { Tag } from 'ant-design-vue';
   import { BasicTable, useTable } from '@/components/Table';
   import { getRolePagination, getRolesByUserId } from '@/api/system/role';
@@ -103,6 +103,10 @@
     roleList.value = newRoles;
   }
 
+  function getSelRoles(): IRoleInfo[] {
+    return [...toRaw(roleList.value)];
+  }
+
   function reloadTable() {
     clearSelectedRowKeys();
     reload();
@@ -124,6 +128,13 @@
       }
     },
   );
+
+  const compExpose = {
+    getSelRoles,
+  };
+
+  export type UserRoleEditTableComp = typeof compExpose;
+  defineExpose(compExpose);
 </script>
 <style lang="scss" scoped>
   .close-icon {

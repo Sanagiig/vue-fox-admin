@@ -1,5 +1,5 @@
 import { http } from '@/utils/http/axios';
-import { IUserInfo, LoginReq, LoginRes, RegisterReq } from './model/userModel';
+import { IUserInfo, LoginReq, LoginRes, RegisterReq, UpdateUserRolesReq } from './model/userModel';
 
 import { MsgMode } from '@/enums/httpEnum';
 import { PageResult } from '@/api/common/result';
@@ -12,6 +12,8 @@ enum Api {
   DeleteById = '/user/deleteUserById',
   DeleteUsers = '/user/deleteUserList',
   UpdateUser = '/user/updateUser',
+  UpdateUserRoles = '/user/updateUserRoles',
+  GetSelf = '/user/getSelf',
   GetUser = '/user/getUser',
   GetUserById = '/user/getUserById',
   GetUserPagination = '/user/getUserPagination',
@@ -56,6 +58,17 @@ export function updateUser(params: IUserInfo) {
     { url: Api.UpdateUser, params },
     { successMessageMode: MsgMode.MESSAGE, errorMessageMode: MsgMode.MESSAGE },
   );
+}
+
+export function updateUserRoles(params: UpdateUserRolesReq) {
+  return http.patch<void>(
+    { url: Api.UpdateUserRoles, params },
+    { successMessageMode: MsgMode.MESSAGE, errorMessageMode: MsgMode.MESSAGE },
+  );
+}
+
+export function getSelf() {
+  return http.get<IUserInfo | void>({ url: Api.GetSelf }, { errorMessageMode: MsgMode.MESSAGE });
 }
 
 export function getUser(params: IUserInfo) {

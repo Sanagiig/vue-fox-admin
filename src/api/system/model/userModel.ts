@@ -13,6 +13,7 @@ export interface IUserInfo extends IBaseInfo {
   email: string;
   homePath: string;
   status: StatusEnum;
+  description: string;
 }
 
 export type RegisterReq = Omit<IUserInfo, 'id' | 'createdAt' | 'updatedAt'>;
@@ -31,4 +32,9 @@ export type LoginRes = {
   user: IUserInfo;
   token: string;
   expiresAt: string;
+};
+
+export type UpdateUserRolesReq = {
+  id: string;
+  roleIds: string[];
 };

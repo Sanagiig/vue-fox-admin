@@ -7,19 +7,8 @@
     :width="drawerWidth"
     @ok="handleSubmit"
   >
-    <BasicForm v-show="isFormDrawer" @register="registerForm">
-      <template #menu="{ model, field }">
-        <BasicTree
-          v-model:value="model[field]"
-          :treeData="treeData"
-          :fieldNames="{ title: 'menuName', key: 'id' }"
-          checkable
-          toolbar
-          title="菜单分配"
-        />
-      </template>
-    </BasicForm>
-    <UserRoleEditTable :userId="userDetail.id" v-show="isTableDrawer" />
+    <BasicForm v-show="isFormDrawer" @register="registerForm" />
+    <UserRoleEditTable ref="userRoleTableRef" :userId="userDetail.id" v-show="isTableDrawer" />
   </BasicDrawer>
 </template>
 <script lang="ts" setup>
@@ -27,18 +16,17 @@
   import { BasicForm, useForm } from '@/components/Form';
   import { formSchema, DrawerTypeEnum } from '../../data/user.data';
   import { BasicDrawer, useDrawerInner } from '@/components/Drawer';
-  import { BasicTree, TreeItem } from '@/components/Tree';
 
-  import { createUser, getUserById, updateUser } from '@/api/system/user';
+  import { createUser, getUserById, updateUser, updateUserRoles } from '@/api/system/user';
   import { IUserInfo } from '@/api/system/model/userModel';
   import UserRoleEditTable from '@/views/system/components/userRoleEditTable/index.vue';
+  import type { UserRoleEditTableComp } from '@/views/system/components/userRoleEditTable/index.vue';
 
   const emit = defineEmits(['success', 'register']);
   const isUpdate = ref(true);
   const type = ref<DrawerTypeEnum>(DrawerTypeEnum.ADD);
-  const treeData = ref<TreeItem[]>([]);
   const userDetail = ref<IUserInfo>({} as any);
-
+  const userRoleTableRef = ref<UserRoleEditTableComp | null>(null);
   const isFormDrawer = computed(() => {
     return [DrawerTypeEnum.ADD, DrawerTypeEnum.EDIT].includes(type.value);
   });
@@ -50,7 +38,7 @@
   });
 
   const isRemoteDetail = computed(() =>
-    [DrawerTypeEnum.ADD, DrawerTypeEnum.UPDATE_ROLE].includes(type.value),
+    [DrawerTypeEnum.EDIT, DrawerTypeEnum.UPDATE_ROLE].includes(type.value),
   );
 
   const [registerForm, { resetFields, setFieldsValue, updateSchema, validate }] = useForm({
@@ -116,7 +104,16 @@
     return await updateUser(user);
   }
 
-  async function updateUserRole() {}
+  async function updateUserRole() {
+    const roles = userRoleTableRef.value?.getSelRoles();
+    const params = {
+      id: userDetail.value.id,
+      roleIds: roles?.map((item) => item.id) as string[],
+    };
+
+    await updateUserRoles(params);
+    console.log('roles', roles);
+  }
 
   async function handleSubmit() {
     setDrawerProps({ confirmLoading: true });

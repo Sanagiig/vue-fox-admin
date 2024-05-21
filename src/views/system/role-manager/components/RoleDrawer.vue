@@ -7,18 +7,7 @@
     width="500px"
     @ok="handleSubmit"
   >
-    <BasicForm @register="registerForm">
-      <template #menu="{ model, field }">
-        <BasicTree
-          v-model:value="model[field]"
-          :treeData="treeData"
-          :fieldNames="{ title: 'menuName', key: 'id' }"
-          checkable
-          toolbar
-          title="菜单分配"
-        />
-      </template>
-    </BasicForm>
+    <BasicForm @register="registerForm" />
   </BasicDrawer>
 </template>
 <script lang="ts" setup>
@@ -26,15 +15,11 @@
   import { BasicForm, useForm } from '@/components/Form';
   import { formSchema } from '../../data/role.data';
   import { BasicDrawer, useDrawerInner } from '@/components/Drawer';
-  import { BasicTree, TreeItem } from '@/components/Tree';
-
-  import { getMenuList } from '@/api/demo/system';
   import { createRole, getRoleById, updateRole } from '@/api/system/role';
   import { IRoleInfo } from '@/api/system/model/roleModel';
 
   const emit = defineEmits(['success', 'register']);
   const isUpdate = ref(true);
-  const treeData = ref<TreeItem[]>([]);
   const roleDetail = ref<IRoleInfo>({} as any);
   const [registerForm, { resetFields, setFieldsValue, updateSchema, validate, getFieldsValue }] =
     useForm({
@@ -49,9 +34,7 @@
 
     resetData();
     setDrawerProps({ confirmLoading: false });
-    if (unref(treeData).length === 0) {
-      treeData.value = (await getMenuList()) as any as TreeItem[];
-    }
+
     if (unref(isUpdate)) {
       roleDetail.value = (await getRoleById(data.record.id))! || {};
       setFieldsValue(roleDetail.value);

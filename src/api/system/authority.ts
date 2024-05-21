@@ -30,6 +30,7 @@ export function deleteAuthorityById(id: string) {
     { successMessageMode: MsgMode.MESSAGE, errorMessageMode: MsgMode.MESSAGE },
   );
 }
+
 export function deleteAuthorityByIds(ids: string[]) {
   return http.delete<void>(
     { url: Api.DeleteAuthoritys, params: { ids } },

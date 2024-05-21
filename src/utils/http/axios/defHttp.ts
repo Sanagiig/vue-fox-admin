@@ -158,7 +158,7 @@ const transform: AxiosTransform = {
     const token = getToken();
     if (token && (config as Recordable)?.requestOptions?.withToken !== false) {
       // jwt token
-      (config as Recordable).headers.Authorization = options.authenticationScheme
+      (config as Recordable).headers['x-token'] = options.authenticationScheme
         ? `${options.authenticationScheme} ${token}`
         : token;
     }
@@ -242,6 +242,7 @@ function createAxios(opt?: Partial<CreateAxiosOptions>) {
         // 数据处理方式
         transform: clone(transform),
         // 配置项，下面的选项都可以在独立的接口请求中覆盖
+        withCredentials: true,
         requestOptions: {
           // 默认将prefix 添加到url
           joinPrefix: true,

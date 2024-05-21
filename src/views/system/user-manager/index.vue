@@ -7,27 +7,29 @@
       </template>
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'action'">
-          <TableAction
-            :actions="[
-              {
-                icon: 'icon-park-outline:add',
-                onClick: handleUpdateRole.bind(null, record),
-              },
-              {
-                icon: 'clarity:note-edit-line',
-                onClick: handleEdit.bind(null, record),
-              },
-              {
-                icon: 'ant-design:delete-outlined',
-                color: 'error',
-                popConfirm: {
-                  title: '是否确认删除',
-                  placement: 'left',
-                  confirm: handleDelete.bind(null, record.id),
+          <div @click.stop>
+            <TableAction
+              :actions="[
+                {
+                  icon: 'icon-park-outline:add',
+                  onClick: handleUpdateRole.bind(null, record),
                 },
-              },
-            ]"
-          />
+                {
+                  icon: 'clarity:note-edit-line',
+                  onClick: handleEdit.bind(null, record),
+                },
+                {
+                  icon: 'ant-design:delete-outlined',
+                  color: 'error',
+                  popConfirm: {
+                    title: '是否确认删除',
+                    placement: 'left',
+                    confirm: handleDelete.bind(null, record.id),
+                  },
+                },
+              ]"
+            />
+          </div>
         </template>
       </template>
     </BasicTable>
